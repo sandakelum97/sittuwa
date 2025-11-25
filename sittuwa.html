@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seettu Schedule (Organizer Fixed)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1117; color: #e6edf3; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { color: #58a6ff; margin-bottom: 10px; }
+        
+        .container { width: 100%; max-width: 700px; background: #161b22; padding: 25px; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        textarea { width: 100%; height: 180px; background: #0d1117; color: #fff; border: 1px solid #30363d; padding: 10px; border-radius: 5px; font-family: monospace; resize: vertical; }
+        
+        button { width: 100%; padding: 15px; margin-top: 15px; background: #238636; color: #fff; border: none; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #2ea043; }
+        button:disabled { background: #30363d; color: #8b949e; cursor: wait; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #0d1117; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #8b949e; font-size: 14px; text-transform: uppercase; }
+        td { font-size: 18px; font-family: monospace; }
+        
+        .slot { color: #58a6ff; font-weight: bold; }
+        .locked { color: #3fb950; text-shadow: 0 0 10px rgba(63, 185, 80, 0.4); }
+        
+        /* Special Style for Organizer */
+        .organizer-row { background: rgba(210, 153, 34, 0.15); }
+        .organizer-text { color: #d29922 !important; font-weight: bold; text-shadow: 0 0 10px rgba(210, 153, 34, 0.4); }
+        
+        .row-highlight { background: rgba(56, 139, 253, 0.1); }
+    </style>
+</head>
+<body>
+
+    <h1>Seettu Schedule</h1>
+    <p style="color: #8b949e; margin-bottom: 20px;">Month 1 Reserved for Organizer</p>
+
+    <div class="container">
+        <label style="font-size: 12px; color: #d29922; font-weight: bold;">STEP 1: ENTER ORGANIZER ON LINE 1</label><br>
+        <label style="font-size: 12px; color: #8b949e; font-weight: bold;">STEP 2: ENTER OTHER PARTICIPANTS BELOW</label>
+        
+        <textarea id="namesInput">
+Mysitca (Organizer)
+Member 2
+Member 3
+Member 4
+Member 5
+Member 6
+Member 7
+Member 8
+Member 9
+Member 10</textarea>
+
+        <button id="generateBtn" onclick="runSchedule()">GENERATE SCHEDULE</button>
+
+        <table id="resultTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th width="15%">Month</th>
+                    <th>Participant</th>
+                    <th width="25%">Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function runSchedule() {
+            const inputVal = document.getElementById('namesInput').value;
+            let names = inputVal.split('\n').map(n => n.trim()).filter(n => n !== "");
+
+            if (names.length < 2) {
+                alert("Please add at least 2 names.");
+                return;
+            }
+
+            // SEPARATE ORGANIZER FROM OTHERS
+            const organizer = names[0]; // First line
+            const participants = names.slice(1); // The rest
+
+            // UI Setup
+            const btn = document.getElementById('generateBtn');
+            const table = document.getElementById('resultTable');
+            const tbody = document.getElementById('tableBody');
+            
+            btn.disabled = true;
+            btn.innerText = "SHUFFLING...";
+            table.style.display = "table";
+            tbody.innerHTML = "";
+
+            // 1. Setup Table Rows
+            // Row 0 (Organizer) - Fixed immediately
+            let html = `
+                <tr class="organizer-row">
+                    <td style="color: #d29922">Month 1</td>
+                    <td class="organizer-text">${organizer.toUpperCase()}</td>
+                    <td style="font-size: 12px; color: #d29922">ORGANIZER (FIXED)</td>
+                </tr>
+            `;
+
+            // Rows 1-9 (Others) - Initial state
+            participants.forEach((_, index) => {
+                html += `
+                    <tr id="row-${index}">
+                        <td style="color: #8b949e">Month ${index + 2}</td>
+                        <td class="slot" id="slot-${index}">---</td>
+                        <td style="font-size: 12px; color: #8b949e" id="status-${index}">WAITING</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+            // 2. Logic: Shuffle ONLY the participants
+            const shuffledParticipants = secureShuffle([...participants]);
+
+            // 3. Animation for participants only
+            let completedRows = 0;
+            const totalRows = participants.length;
+            
+            const shuffleInterval = setInterval(() => {
+                for (let i = completedRows; i < totalRows; i++) {
+                    const randomName = participants[Math.floor(Math.random() * participants.length)];
+                    document.getElementById(`slot-${i}`).innerText = randomName;
+                }
+            }, 50);
+
+            // 4. Locking Sequence (Starting from Month 2)
+            let lockIndex = 0;
+            
+            function lockNextRow() {
+                if (lockIndex >= totalRows) {
+                    clearInterval(shuffleInterval);
+                    btn.innerText = "SCHEDULE COMPLETE";
+                    btn.style.background = "#30363d";
+                    return;
+                }
+
+                const currentRowId = `row-${lockIndex}`;
+                const currentSlot = document.getElementById(`slot-${lockIndex}`);
+                const currentStatus = document.getElementById(`status-${lockIndex}`);
+
+                // highlight
+                document.getElementById(currentRowId).classList.add('row-highlight');
+
+                // Set real value
+                currentSlot.innerText = shuffledParticipants[lockIndex];
+                currentSlot.classList.remove('slot');
+                currentSlot.classList.add('locked');
+                currentStatus.innerText = "LOCKED";
+                currentStatus.style.color = "#3fb950";
+
+                completedRows++;
+                lockIndex++;
+
+                setTimeout(lockNextRow, 800); 
+            }
+
+            setTimeout(lockNextRow, 1000);
+        }
+
+        function secureShuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const randomBuffer = new Uint32Array(1);
+                window.crypto.getRandomValues(randomBuffer);
+                const j = randomBuffer[0] % (i + 1);
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
