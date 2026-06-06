@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0c0e14;color:#e2e8f0;min-height:100vh;padding:2rem 1.5rem}
+h2{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.12em;color:#94a3b8;text-transform:uppercase;font-weight:400;margin-bottom:.75rem}
+.app{max-width:680px;margin:0 auto}
+.header{margin-bottom:2rem}
+.header h1{font-family:'Space Mono',monospace;font-size:22px;color:#f1f5f9;font-weight:700;letter-spacing:-.02em}
+.header p{font-size:14px;color:#64748b;margin-top:.25rem}
+
+.panel{background:#131720;border:0.5px solid #1e2738;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+
+.organizer-field{display:flex;align-items:center;gap:10px}
+.organizer-field input{flex:1;background:#0c0e14;border:0.5px solid #1e2738;border-radius:8px;padding:10px 14px;color:#f1f5f9;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
+.organizer-field input:focus{border-color:#3b82f6}
+.org-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'Space Mono',monospace;letter-spacing:.06em;background:rgba(234,179,8,.08);color:#eab308;border:0.5px solid rgba(234,179,8,.25);padding:4px 10px;border-radius:6px;white-space:nowrap}
+
+.add-row{display:flex;gap:8px;margin-bottom:1rem}
+.add-row input{flex:1;background:#0c0e14;border:0.5px solid #1e2738;border-radius:8px;padding:10px 14px;color:#f1f5f9;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
+.add-row input:focus{border-color:#3b82f6}
+.add-row input::placeholder{color:#334155}
+.btn-add{background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
+.btn-add:hover{background:#2563eb}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;min-height:36px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#1e293b;border:0.5px solid #334155;border-radius:20px;padding:5px 10px 5px 12px;font-size:13px;color:#cbd5e1}
+.chip-num{font-family:'Space Mono',monospace;font-size:10px;color:#475569}
+.chip-del{cursor:pointer;color:#475569;line-height:1;background:none;border:none;padding:0;font-size:16px;display:flex;align-items:center;transition:.1s}
+.chip-del:hover{color:#f87171}
+.no-members{font-size:13px;color:#334155;font-style:italic;padding:.5rem 0}
+
+.count-line{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.count-badge{font-size:12px;font-family:'Space Mono',monospace;color:#475569}
+.count-badge span{color:#94a3b8}
+
+.btn-generate{width:100%;padding:14px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1.5rem;transition:.2s;letter-spacing:.01em}
+.btn-generate:hover{background:#2563eb}
+.btn-generate:disabled{background:#1e2738;color:#334155;cursor:not-allowed}
+.btn-generate i{font-size:18px}
+
+.result-panel{background:#131720;border:0.5px solid #1e2738;border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.result-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:0.5px solid #1e2738}
+.result-header-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:#475569;text-transform:uppercase}
+.btn-reset{background:none;border:0.5px solid #1e2738;color:#64748b;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;transition:.15s}
+.btn-reset:hover{border-color:#334155;color:#94a3b8}
+
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:0.5px solid #1e2738}
+th{padding:10px 1.25rem;text-align:left;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:#334155;text-transform:uppercase;font-weight:400}
+td{padding:13px 1.25rem;font-size:14px;border-bottom:0.5px solid #0f1420}
+tbody tr:last-child td{border-bottom:none}
+
+.td-month{font-family:'Space Mono',monospace;font-size:12px;color:#334155}
+.td-name{font-size:15px;font-weight:500;color:#e2e8f0;font-family:'DM Sans',sans-serif}
+.td-name.slot-anim{color:#1e3a5f;font-family:'Space Mono',monospace;font-size:13px}
+.td-name.locked{color:#e2e8f0}
+
+.td-status{font-size:11px;font-family:'Space Mono',monospace;letter-spacing:.06em}
+.status-waiting{color:#1e3a5f}
+.status-locking{color:#f59e0b}
+.status-locked{color:#22c55e}
+.status-org{color:#eab308}
+
+.org-row{background:rgba(234,179,8,.04)}
+.org-row .td-month{color:#a16207}
+.org-row .td-name{color:#eab308 !important}
+
+.active-row{background:rgba(59,130,246,.05)}
+
+.error-msg{font-size:13px;color:#f87171;padding:.5rem 0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <h1>Seettu Scheduler</h1>
+  <p>Randomised chit-fund slot draw — organiser locked to Month 1</p>
+</div>
+
+<div class="panel">
+  <h2>Organiser</h2>
+  <div class="organizer-field">
+    <input type="text" id="orgInput" placeholder="Enter organiser name…" value="Mysitca">
+    <span class="org-badge"><i class="ti ti-crown" style="font-size:12px"></i> Month 1</span>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Participants</h2>
+  <div class="add-row">
+    <input type="text" id="memberInput" placeholder="Type a name and press Add or Enter…" maxlength="40">
+    <button class="btn-add" onclick="addMember()"><i class="ti ti-plus" style="font-size:16px"></i> Add</button>
+  </div>
+  <div class="chips" id="chipList">
+    <span class="no-members" id="emptyHint">No participants yet</span>
+  </div>
+  <div class="count-line">
+    <span class="count-badge">Total slots: <span id="totalSlots">1</span></span>
+    <span class="count-badge" id="memberCount">0 participants</span>
+  </div>
+  <div class="error-msg" id="errMsg" style="display:none"></div>
+</div>
+
+<button class="btn-generate" id="genBtn" onclick="generate()" disabled>
+  <i class="ti ti-dice-5"></i> Generate Schedule
+</button>
+
+<div class="result-panel" id="resultPanel" style="display:none">
+  <div class="result-header">
+    <span class="result-header-title"><i class="ti ti-table" style="font-size:14px;vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>Draw Results</span>
+    <button class="btn-reset" onclick="resetSchedule()"><i class="ti ti-refresh" style="font-size:13px"></i> Reset</button>
+  </div>
+  <table>
+    <thead><tr><th width="18%">Month</th><th>Name</th><th width="22%">Status</th></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+let members = [];
+
+document.getElementById('memberInput').addEventListener('keydown', function(e){
+  if(e.key==='Enter') addMember();
+});
+
+function addMember(){
+  const inp = document.getElementById('memberInput');
+  const name = inp.value.trim();
+  if(!name){ showErr('Please enter a name.'); return; }
+  if(members.map(m=>m.toLowerCase()).includes(name.toLowerCase())){
+    showErr('This name is already added.'); return;
+  }
+  hideErr();
+  members.push(name);
+  inp.value='';
+  renderChips();
+  updateGenBtn();
+  inp.focus();
+}
+
+function removeMember(idx){
+  members.splice(idx,1);
+  renderChips();
+  updateGenBtn();
+}
+
+function renderChips(){
+  const list = document.getElementById('chipList');
+  const hint = document.getElementById('emptyHint');
+  const mc = document.getElementById('memberCount');
+  const ts = document.getElementById('totalSlots');
+  mc.innerHTML = members.length + ' participant' + (members.length!==1?'s':'');
+  ts.innerHTML = members.length + 1;
+  if(members.length===0){
+    list.innerHTML='<span class="no-members" id="emptyHint">No participants yet</span>';
+    return;
+  }
+  list.innerHTML = members.map((m,i)=>`
+    <span class="chip">
+      <span class="chip-num">M${i+2}</span> ${escHtml(m)}
+      <button class="chip-del" onclick="removeMember(${i})" aria-label="Remove ${escHtml(m)}"><i class="ti ti-x" style="font-size:13px"></i></button>
+    </span>
+  `).join('');
+}
+
+function updateGenBtn(){
+  const btn = document.getElementById('genBtn');
+  btn.disabled = members.length < 1;
+}
+
+function showErr(msg){ const e=document.getElementById('errMsg'); e.textContent=msg; e.style.display='block'; }
+function hideErr(){ document.getElementById('errMsg').style.display='none'; }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function secureShuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const buf=new Uint32Array(1);
+    window.crypto.getRandomValues(buf);
+    const j=buf[0]%(i+1);
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function resetSchedule(){
+  document.getElementById('resultPanel').style.display='none';
+  document.getElementById('tableBody').innerHTML='';
+  document.getElementById('genBtn').disabled = members.length < 1;
+  document.getElementById('genBtn').innerHTML='<i class="ti ti-dice-5"></i> Generate Schedule';
+  document.getElementById('genBtn').style.background='';
+}
+
+function generate(){
+  hideErr();
+  const orgName = document.getElementById('orgInput').value.trim();
+  if(!orgName){ showErr('Please enter the organiser name.'); return; }
+  if(members.length < 1){ showErr('Add at least one participant.'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader-2"></i> Shuffling…';
+
+  const panel = document.getElementById('resultPanel');
+  const tbody = document.getElementById('tableBody');
+  panel.style.display='block';
+
+  const shuffled = secureShuffle(members);
+  const allSlots = [orgName, ...shuffled];
+
+  let rows='';
+  rows += `<tr class="org-row">
+    <td class="td-month">Month 1</td>
+    <td class="td-name" id="rn-0">${escHtml(orgName)}</td>
+    <td class="td-status status-org">Organiser</td>
+  </tr>`;
+  for(let i=0;i<shuffled.length;i++){
+    rows += `<tr id="row-${i+1}">
+      <td class="td-month">Month ${i+2}</td>
+      <td class="td-name slot-anim" id="rn-${i+1}">—</td>
+      <td class="td-status status-waiting" id="rs-${i+1}">Waiting</td>
+    </tr>`;
+  }
+  tbody.innerHTML=rows;
+
+  const candidates = [...members];
+  let animFrames=0;
+  const animInterval = setInterval(()=>{
+    animFrames++;
+    for(let i=0;i<shuffled.length;i++){
+      const el=document.getElementById(`rn-${i+1}`);
+      if(el && el.classList.contains('slot-anim')){
+        el.textContent = candidates[Math.floor(Math.random()*candidates.length)];
+      }
+    }
+  },60);
+
+  let lockIdx=0;
+  function lockNext(){
+    if(lockIdx>=shuffled.length){
+      clearInterval(animInterval);
+      btn.innerHTML='<i class="ti ti-check"></i> Schedule Complete';
+      btn.style.background='#15803d';
+      return;
+    }
+    const rowNum = lockIdx+1;
+    const nameEl = document.getElementById(`rn-${rowNum}`);
+    const statEl = document.getElementById(`rs-${rowNum}`);
+    const rowEl = document.getElementById(`row-${rowNum}`);
+    if(nameEl){
+      statEl.textContent='Locking…';
+      statEl.className='td-status status-locking';
+    }
+    setTimeout(()=>{
+      if(!nameEl) return;
+      nameEl.textContent = shuffled[lockIdx];
+      nameEl.classList.remove('slot-anim');
+      nameEl.classList.add('locked');
+      statEl.textContent = 'Locked';
+      statEl.className='td-status status-locked';
+      if(rowEl){ rowEl.classList.add('active-row'); setTimeout(()=>rowEl.classList.remove('active-row'),600); }
+      lockIdx++;
+      setTimeout(lockNext, 700);
+    }, 350);
+  }
+  setTimeout(lockNext, 900);
+}
+</script>
+</body>
+</html>
